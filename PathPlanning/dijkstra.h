@@ -21,12 +21,12 @@ private:
 		// Stores indices of vertex in 2D vector vertices
 		Coordinate loc;
 
-		// Stores type of vertex (walkable, unknown, obstacle, or path)
+		// Stores type of vertex (walkable, unknown, obstacle, etc.)
 		Cell type;
 
 		// Whether the shortest path from start is known
 		bool path_known = false;
-	}; // Vertex
+	}; // class Vertex
 
 	// Functor to compare two Vertex pointers; returns true if Vertex a's path_length is 
 	// less than Vertex b's path_length
@@ -36,7 +36,7 @@ private:
 		bool operator()(const Vertex* a, const Vertex* b) {
 			return a->path_length < b->path_length;
 		}
-	}; // PathComp
+	}; // class PathComp
 
 // ---------- Member variables ----------
 
@@ -205,6 +205,6 @@ private:
 	} // updateAdj()
 
 
-}; // Dijkstra
+}; // class Dijkstra
 
 
