@@ -34,7 +34,7 @@ private:
 	public: 
 
 		bool operator()(const Vertex* a, const Vertex* b) {
-			return a->path_length < b->path_length;
+			return a->path_length > b->path_length;
 		}
 	}; // class PathComp
 
@@ -51,6 +51,12 @@ private:
 	Coordinate start;
 	
 	Coordinate goal;
+
+	// Number of vertices processed (taken out of pq)
+	int num_v_processed = 0;
+
+	// Length of path
+	int total_path_length = 0;
 
 public: 
 
@@ -92,38 +98,28 @@ public:
 			// Get vertex with smallest path_length out of the pq
 			Vertex* min_v = pq.top();
 			pq.pop();
-			// If the shortest path from start to min_v is not known yet and 
+			// If the shortest path from start to min_v is not known yet and min_v is walkable
 			if (!min_v->path_known && min_v->type == Cell::walkable) {
 				min_v->path_known = true;
 				// Update the path_length of adjacent vertices and add new vertices to pq
 				updateAdj(min_v);
+				++num_v_processed;
 			}
 		}
 
 		// Backtrack from goal to find the shortest path between start and goal
-		Vertex* v_goal = &(vertices[goal.row][goal.col]);
-		v_goal->type = Cell::goal;
-		Coordinate v_path = v_goal->prev_vertex;
-		while (!(v_path == start)) {
-			if (v_path == Coordinate{ -1, -1 }) {
-				std::cout << "No path found\n";
-				break;
-			}
-			Vertex* v = &(vertices[v_path.row][v_path.col]);
-			v->type = Cell::path;
-			v_path = v->prev_vertex;
-		}
-		Vertex* v_start = &(vertices[start.row][start.col]);
-		v_start->type = Cell::start;
+		reconstructPath();
 		// Print the map; vertices in the shortest path will be appear as an 'x'
 		printPath();
 	}
-
 
 private:
 	
 	// Prints out map of vertices, an x means that vertex is part of the shortest path
 	void printPath() const {
+		std::cout << "Dijkstra's path \n";
+		std::cout << "Cells processed: " << num_v_processed << "\n";
+		std::cout << "Path length: " << total_path_length << "\n\n";
 		for (size_t i = 0; i < vertices.size(); ++i) {
 			for (size_t j = 0; j < vertices[0].size(); ++j) {
 				switch (vertices[i][j].type) {
@@ -137,18 +133,19 @@ private:
 					std::cout << "-1 ";
 					break;
 				case Cell::path:
-					std::cout << "x  ";
+					std::cout << RED "x  " << RESET;
 					break;
 				case Cell::start:
-					std::cout << "s  ";
+					std::cout << RED << "s  " << RESET;
 					break;
 				case Cell::goal:
-					std::cout << "g  ";
+					std::cout << RED << "g  " << RESET;
 					break;
 				} // switch()
 			} // for(j)
 			std::cout << "\n";
 		} // for(i)
+		std::cout << "\n";
 	} // printMap()
 
 	// Updates the path_length of all vertices adjacent to given vertex and adds new vertices
@@ -203,6 +200,27 @@ private:
 			}
 		}
 	} // updateAdj()
+
+	// Backtrack from goal to find the shortest path between start and goal; sets the type of
+	// each vertex in the path equal to "path"
+	void reconstructPath() {
+		Vertex* v_goal = &(vertices[goal.row][goal.col]);
+		v_goal->type = Cell::goal;
+		Coordinate v_path = v_goal->prev_vertex;
+		++total_path_length;
+		while (!(v_path == start)) {
+			if (v_path == Coordinate{ -1, -1 }) {
+				std::cout << "No path found\n";
+				break;
+			}
+			Vertex* v = &(vertices[v_path.row][v_path.col]);
+			v->type = Cell::path;
+			v_path = v->prev_vertex;
+			++total_path_length;
+		}
+		Vertex* v_start = &(vertices[start.row][start.col]);
+		v_start->type = Cell::start;
+	}
 
 
 }; // class Dijkstra

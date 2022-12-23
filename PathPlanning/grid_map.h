@@ -3,6 +3,16 @@
 #include <vector>
 #include <iostream>
 
+#define RESET   "\033[0m"
+#define BLACK   "\033[30m"      /* Black */
+#define RED     "\033[31m"      /* Red */
+#define GREEN   "\033[32m"      /* Green */
+#define YELLOW  "\033[33m"      /* Yellow */
+#define BLUE    "\033[34m"      /* Blue */
+#define MAGENTA "\033[35m"      /* Magenta */
+#define CYAN    "\033[36m"      /* Cyan */
+#define WHITE   "\033[37m"      /* White */
+
 enum class Cell {
 	obstacle,
 	walkable,
@@ -15,7 +25,7 @@ enum class Cell {
 struct Coordinate {
 	int row, col;
 
-	bool operator==(const Coordinate& rhs) {
+	bool operator==(const Coordinate& rhs) const {
 		return (this->row == rhs.row) && (this->col == rhs.col);
 	}
 };
@@ -63,9 +73,13 @@ static std::pair<Coordinate, Coordinate> readStartGoal() {
 }
 
 // Prints given 2D vector of cells to cout
-static void printMap(const std::vector<std::vector<Cell>>& map) {
-	for (size_t i = 0; i < map.size(); ++i) {
-		for (size_t j = 0; j < map[0].size(); ++j) {
+static void printMap(std::vector<std::vector<Cell>>& map, 
+	const Coordinate& start, const Coordinate& goal) {
+	map[start.row][start.col] = Cell::start;
+	map[goal.row][goal.col] = Cell::goal;
+	for (int i = 0; i < map.size(); ++i) {
+		for (int j = 0; j < map[0].size(); ++j) {
+
 			switch (map[i][j]) {
 			case Cell::obstacle:
 				std::cout << "1  ";
@@ -78,6 +92,12 @@ static void printMap(const std::vector<std::vector<Cell>>& map) {
 				break;
 			case Cell::path:
 				std::cout << "x  ";
+				break;
+			case Cell::start:
+				std::cout << "s  ";
+				break;
+			case Cell::goal:
+				std::cout << "g  ";
 				break;
 			} // switch(map[i][j]
 		} // for(j)
