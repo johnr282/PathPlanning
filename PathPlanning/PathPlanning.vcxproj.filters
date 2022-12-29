@@ -46,10 +46,13 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="grid_map.h">
+    <ClInclude Include="structs.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="a_star.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bfs_dfs.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

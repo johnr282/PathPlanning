@@ -141,7 +141,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="a_star.h" />
-    <ClInclude Include="grid_map.h" />
+    <ClInclude Include="bfs_dfs.h" />
+    <ClInclude Include="structs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

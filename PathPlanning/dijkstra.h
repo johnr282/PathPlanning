@@ -4,7 +4,7 @@
 #include <limits>
 #include <queue>
 #include <climits>
-#include "grid_map.h"
+#include "structs.h"
 
 class Dijkstra {
 private: 
@@ -21,7 +21,7 @@ private:
 		// Stores indices of vertex in 2D vector vertices
 		Coordinate loc;
 
-		// Stores type of vertex (walkable, unknown, obstacle, etc.)
+		// Stores type of vertex (walkable, obstacle, etc.)
 		Cell type;
 
 		// Whether the shortest path from start is known
@@ -43,6 +43,9 @@ private:
 	// Stores information for Dijkstra's about each location in map
 	std::vector<std::vector<Vertex>> vertices;
 
+	// Used for printing the path
+	std::vector<std::vector<Cell>> map;
+
 	// Min path_length priority queue for Dijkstra's algorithm; Vertex with lowest path_length
 	// have highest priority
 	std::priority_queue<Vertex*, std::vector<Vertex*>, PathComp> pq;
@@ -52,8 +55,8 @@ private:
 	
 	Coordinate goal;
 
-	// Number of vertices processed (taken out of pq)
-	int num_v_processed = 0;
+	// Number of vertices explored
+	int num_v_explored = 0;
 
 	// Length of path
 	int total_path_length = 0;
@@ -65,9 +68,9 @@ public:
 	// Constructor
 	Dijkstra(const std::vector<std::vector<Cell>>& map_in, const Coordinate& start_in,
 		const Coordinate& goal_in)
-		: start{ start_in }, goal{ goal_in } { 
+		: map{ map_in }, start{ start_in }, goal{ goal_in } { 
 		// Checks that both start and goal are walkable spaces
-		if (map_in[start.row][start.col] != Cell::walkable || map_in[goal.row][goal.col] != Cell::walkable) {
+		if (map_in[start.row][start.col] != Cell::start || map_in[goal.row][goal.col] != Cell::goal) {
 			std::cerr << "Invalid start or goal coordinate\n";
 			exit(1);
 		}
@@ -89,7 +92,7 @@ public:
 
 	// Uses Dijkstra's algorithm to find the shortest path between start and goal; changes
 	// type of each Vertex in that path to "path"
-	void findPath() { 
+	std::vector<std::vector<Cell>> findPath() { 
 		// Set start vertex's path_length to 0 and add it to pq
 		vertices[start.row][start.col].path_length = 0;
 		pq.push(&vertices[start.row][start.col]);
@@ -99,54 +102,30 @@ public:
 			Vertex* min_v = pq.top();
 			pq.pop();
 			// If the shortest path from start to min_v is not known yet and min_v is walkable
-			if (!min_v->path_known && min_v->type == Cell::walkable) {
+			if (!min_v->path_known && isWalkable(min_v)) {
 				min_v->path_known = true;
 				// Update the path_length of adjacent vertices and add new vertices to pq
 				updateAdj(min_v);
-				++num_v_processed;
+				++num_v_explored;
 			}
 		}
 
 		// Backtrack from goal to find the shortest path between start and goal
 		reconstructPath();
 		// Print the map; vertices in the shortest path will be appear as an 'x'
-		printPath();
+		printData();
+
+		return map;
 	}
 
 private:
 	
 	// Prints out map of vertices, an x means that vertex is part of the shortest path
-	void printPath() const {
+	void printData() const {
 		std::cout << "Dijkstra's path \n";
-		std::cout << "Cells processed: " << num_v_processed << "\n";
+		std::cout << "Cells examined: " << num_v_explored << "\n";
 		std::cout << "Path length: " << total_path_length << "\n\n";
-		for (size_t i = 0; i < vertices.size(); ++i) {
-			for (size_t j = 0; j < vertices[0].size(); ++j) {
-				switch (vertices[i][j].type) {
-				case Cell::obstacle:
-					std::cout << "1  ";
-					break;
-				case Cell::walkable:
-					std::cout << "0  ";
-					break;
-				case Cell::unknown:
-					std::cout << "-1 ";
-					break;
-				case Cell::path:
-					std::cout << RED "x  " << RESET;
-					break;
-				case Cell::start:
-					std::cout << RED << "s  " << RESET;
-					break;
-				case Cell::goal:
-					std::cout << RED << "g  " << RESET;
-					break;
-				} // switch()
-			} // for(j)
-			std::cout << "\n";
-		} // for(i)
-		std::cout << "\n";
-	} // printMap()
+	} // printData()
 
 	// Updates the path_length of all vertices adjacent to given vertex and adds new vertices
 	// to pq
@@ -157,7 +136,8 @@ private:
 		// Check if vertex above is walkable and check for indexing out of bounds
 		if (v->loc.row != 0) {
 			Vertex* v_up = &(vertices[v->loc.row - 1][v->loc.col]);
-			if (v_up->type == Cell::walkable) {
+			++num_v_explored;
+			if (isWalkable(v_up)) {
 				if (new_path_len < v_up->path_length) {
 					v_up->path_length = new_path_len;
 					v_up->prev_vertex = v->loc;
@@ -169,7 +149,8 @@ private:
 		// Repeat above process vertices below, left, and right
 		if (v->loc.row != vertices.size() - 1) {
 			Vertex* v_down = &(vertices[v->loc.row + 1][v->loc.col]);
-			if (v_down->type == Cell::walkable) {
+			++num_v_explored;
+			if (isWalkable(v_down)) {
 				if (new_path_len < v_down->path_length) {
 					v_down->path_length = new_path_len;
 					v_down->prev_vertex = v->loc;
@@ -180,7 +161,8 @@ private:
 
 		if (v->loc.col != vertices[0].size() - 1) {
 			Vertex* v_right = &(vertices[v->loc.row][v->loc.col + 1]);
-			if (v_right->type == Cell::walkable) {
+			++num_v_explored;
+			if (isWalkable(v_right)) {
 				if (new_path_len < v_right->path_length) {
 					v_right->path_length = new_path_len;
 					v_right->prev_vertex = v->loc;
@@ -191,7 +173,8 @@ private:
 
 		if (v->loc.col != 0) {
 			Vertex* v_left = &(vertices[v->loc.row][v->loc.col - 1]);
-			if (v_left->type == Cell::walkable) {
+			++num_v_explored;
+			if (isWalkable(v_left)) {
 				if (new_path_len < v_left->path_length) {
 					v_left->path_length = new_path_len;
 					v_left->prev_vertex = v->loc;
@@ -205,7 +188,6 @@ private:
 	// each vertex in the path equal to "path"
 	void reconstructPath() {
 		Vertex* v_goal = &(vertices[goal.row][goal.col]);
-		v_goal->type = Cell::goal;
 		Coordinate v_path = v_goal->prev_vertex;
 		++total_path_length;
 		while (!(v_path == start)) {
@@ -213,16 +195,17 @@ private:
 				std::cout << "No path found\n";
 				break;
 			}
+			map[v_path.row][v_path.col] = Cell::path;
 			Vertex* v = &(vertices[v_path.row][v_path.col]);
-			v->type = Cell::path;
 			v_path = v->prev_vertex;
 			++total_path_length;
 		}
-		Vertex* v_start = &(vertices[start.row][start.col]);
-		v_start->type = Cell::start;
-	}
+	} // reconstructPath()
+
+	// Returns true if a given vertex is either walkable, start, or goal
+	bool isWalkable(Vertex* v) {
+		return v->type == Cell::walkable || v->type == Cell::start || v->type == Cell::goal;
+	} // isWalkable()
 
 
 }; // class Dijkstra
-
-

@@ -4,8 +4,7 @@
 #include <queue>
 #include <climits>
 #include <set>
-#include "grid_map.h"
-
+#include "structs.h"
 
 
 class AStar {
@@ -33,6 +32,7 @@ private:
 
 	}; // class Vertex
 
+
 	// Functor to compare two Vertex pointers; returns true if Vertex a's f is less
 	// than Vertex b's f
 	class FComp {
@@ -43,10 +43,14 @@ private:
 		}
 	}; // class FComp
 
+
 	// ---------- Member variables ----------
 
-		// Stores all the vertices in the map
+	// Stores all the vertices in the map
 	std::vector<std::vector<Vertex>> vertices;
+
+	// Used for printing the path
+	std::vector<std::vector<Cell>> map;
 
 	// Min f_score priority queue; vertex with lowest f_score has highest priority; 
 	// contains vertices that still need to be explored
@@ -60,8 +64,8 @@ private:
 
 	Coordinate goal;
 
-	// Number of vertices processed (taken out of pq)
-	int num_v_processed = 0;
+	// Number of vertices explored
+	int num_v_explored = 0;
 
 	// Length of path
 	int total_path_length = 0;
@@ -73,9 +77,9 @@ public:
 		// Constructor
 	AStar(const std::vector<std::vector<Cell>>& map_in, const Coordinate& start_in,
 		const Coordinate& goal_in)
-		: start{ start_in }, goal{ goal_in } {
+		: map{ map_in }, start{ start_in }, goal{ goal_in } {
 		// Checks that start and goal are walkable spaces
-		if (map_in[start.row][start.col] != Cell::walkable || map_in[goal.row][goal.col] != Cell::walkable) {
+		if (map_in[start.row][start.col] != Cell::start || map_in[goal.row][goal.col] != Cell::goal) {
 			std::cerr << "Invalid start or goal coordinate\n";
 			exit(1);
 		}
@@ -95,7 +99,7 @@ public:
 	} // AStar()
 
 	// Uses A* to find the shortest path between start and goal
-	void findPath() {
+	std::vector<std::vector<Cell>> findPath() {
 		// Calculate start's f_score and add it to open_list
 		Vertex* v_start = &(vertices[start.row][start.col]);
 		v_start->g_score = 0;
@@ -123,13 +127,15 @@ public:
 			// Process min_v's adjacent vertices; calculate their f_scores and add them to 
 			// open_list
 			updateAdj(v_min);
-			++num_v_processed;
+			++num_v_explored;
 		}
 
 		// Backtrack from goal to start to find the shortest path between start and goal
 		reconstructPath();
 		// Print the map; vertices in the shortest path will be appear as an 'x'
-		printPath();
+		printData();
+
+		return map;
 	} // findPath()
 
 private:
@@ -152,8 +158,9 @@ private:
 		if (v->loc.row != 0) {
 			Vertex* v_up = &(vertices[v->loc.row - 1][v->loc.col]);
 			auto it = closed_list.find(v_up);
+			++num_v_explored;
 			// If v_up is walkable and not in closed_list
-			if (v_up->type == Cell::walkable && it == closed_list.end()) {
+			if (isWalkable(v_up) && it == closed_list.end()) {
 				// If new g_score is shorter than v_up's current g_score or v_up is
 				// not in the open_list
 				if (new_g_score < v_up->g_score || !v_up->in_open) {
@@ -174,7 +181,7 @@ private:
 		if (v->loc.row != vertices.size() - 1) {
 			Vertex* v_down = &(vertices[v->loc.row + 1][v->loc.col]);
 			auto it = closed_list.find(v_down);
-			if (v_down->type == Cell::walkable && it == closed_list.end()) {
+			if (isWalkable(v_down) && it == closed_list.end()) {
 				if (new_g_score < v_down->g_score || !v_down->in_open) {
 					v_down->g_score = new_g_score;
 					v_down->f_score = new_g_score + calculateH(v_down);
@@ -189,7 +196,8 @@ private:
 		if (v->loc.col != 0) {
 			Vertex* v_left = &(vertices[v->loc.row][v->loc.col - 1]);
 			auto it = closed_list.find(v_left);
-			if (v_left->type == Cell::walkable && it == closed_list.end()) {
+			++num_v_explored;
+			if (isWalkable(v_left) && it == closed_list.end()) {
 				if (new_g_score < v_left->g_score || !v_left->in_open) {
 					v_left->g_score = new_g_score;
 					v_left->f_score = new_g_score + calculateH(v_left);
@@ -204,7 +212,8 @@ private:
 		if (v->loc.col != vertices[0].size() - 1) {
 			Vertex* v_right = &(vertices[v->loc.row][v->loc.col + 1]);
 			auto it = closed_list.find(v_right);
-			if (v_right->type == Cell::walkable && it == closed_list.end()) {
+			++num_v_explored;
+			if (isWalkable(v_right) && it == closed_list.end()) {
 				if (new_g_score < v_right->g_score || !v_right->in_open) {
 					v_right->g_score = new_g_score;
 					v_right->f_score = new_g_score + calculateH(v_right);
@@ -220,7 +229,6 @@ private:
 	// each vertex in the path equal to "path"
 	void reconstructPath() {
 		Vertex* v_goal = &(vertices[goal.row][goal.col]);
-		v_goal->type = Cell::goal;
 		Coordinate v_path = v_goal->prev_vertex;
 		++total_path_length;
 		while (!(v_path == start)) {
@@ -228,49 +236,24 @@ private:
 				std::cout << "No path found\n";
 				break;
 			}
+			map[v_path.row][v_path.col] = Cell::path;
 			Vertex* v = &(vertices[v_path.row][v_path.col]);
-			v->type = Cell::path;
 			v_path = v->prev_vertex;
 			++total_path_length;
 		}
-		Vertex* v_start = &(vertices[start.row][start.col]);
-		v_start->type = Cell::start;
 	} // reconstructPath()
 
 	// Prints out map of vertices, an x means that vertex is part of the shortest path
-	void printPath() const {
+	void printData() const {
 		std::cout << "A* path \n";
-		std::cout << "Cells processed: " << num_v_processed << "\n";
+		std::cout << "Cells examined: " << num_v_explored << "\n";
 		std::cout << "Path length: " << total_path_length << "\n\n";
-		for (size_t i = 0; i < vertices.size(); ++i) {
-			for (size_t j = 0; j < vertices[0].size(); ++j) {
-				switch (vertices[i][j].type) {
-				case Cell::obstacle:
-					std::cout << "1  ";
-					break;
-				case Cell::walkable:
-					std::cout << "0  ";
-					break;
-				case Cell::unknown:
-					std::cout << "-1 ";
-					break;
-				case Cell::path:
-					std::cout << RED "x  " << RESET;
-					break;
-				case Cell::start:
-					std::cout << RED << "s  " << RESET;
-					break;
-				case Cell::goal:
-					std::cout << RED << "g  " << RESET;
-					break;
-				} // switch()
-			} // for(j)
-			std::cout << "\n";
-		} // for(i)
-		std::cout << "\n";
-	} // printMap()
+	} // printData()
 
-
+	// Returns true if a given vertex is either walkable, start, or goal
+	bool isWalkable(Vertex* v) {
+		return v->type == Cell::walkable || v->type == Cell::start || v->type == Cell::goal;
+	}
 
 
 }; // class AStar
