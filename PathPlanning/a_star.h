@@ -127,12 +127,11 @@ public:
 			// Process min_v's adjacent vertices; calculate their f_scores and add them to 
 			// open_list
 			updateAdj(v_min);
-			++num_v_explored;
 		}
 
 		// Backtrack from goal to start to find the shortest path between start and goal
 		reconstructPath();
-		// Print the map; vertices in the shortest path will be appear as an 'x'
+		// Print data describing path
 		printData();
 
 		return map;
@@ -180,22 +179,22 @@ private:
 	} // updateAdj()
 
 	// Helper function for updateAdj()
-	void updateV(Vertex* v, Vertex* curr_v, int new_g_score) {
-		auto it = closed_list.find(curr_v);
-		++num_v_explored;
+	void updateV(Vertex* v, Vertex* adj_v, int new_g_score) {
+		auto it = closed_list.find(adj_v);
 		// If v_up is walkable and not in closed_list
-		if (isWalkable(curr_v) && it == closed_list.end()) {
+		if (isWalkable(adj_v) && it == closed_list.end()) {
+			++num_v_explored;
 			// If new g_score is shorter than v_up's current g_score or v_up is
 			// not in the open_list
-			if (new_g_score < curr_v->g_score || !curr_v->in_open) {
+			if (new_g_score < adj_v->g_score || !adj_v->in_open) {
 				// Update v_up's g_score, f_score, and prev_vertex
-				curr_v->g_score = new_g_score;
-				curr_v->f_score = new_g_score + calculateH(curr_v);
-				curr_v->prev_vertex = v->loc;
+				adj_v->g_score = new_g_score;
+				adj_v->f_score = new_g_score + calculateH(adj_v);
+				adj_v->prev_vertex = v->loc;
 				// Add v_up to open_list; even if v_up was already in open_list, we
 				// need to add it again to take the updated f_score into account
-				open_list.push(curr_v);
-				curr_v->in_open = true;
+				open_list.push(adj_v);
+				adj_v->in_open = true;
 			}
 		}
 	} // updateV()
@@ -218,7 +217,7 @@ private:
 		}
 	} // reconstructPath()
 
-	// Prints out map of vertices, an x means that vertex is part of the shortest path
+	// Prints out data describing path
 	void printData() const {
 		std::cout << "A* path \n";
 		std::cout << "Cells examined: " << num_v_explored << "\n";

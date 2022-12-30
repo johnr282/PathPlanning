@@ -106,13 +106,12 @@ public:
 				min_v->path_known = true;
 				// Update the path_length of adjacent vertices and add new vertices to pq
 				updateAdj(min_v);
-				++num_v_explored;
 			}
 		}
 
 		// Backtrack from goal to find the shortest path between start and goal
 		reconstructPath();
-		// Print the map; vertices in the shortest path will be appear as a red x
+		// Print data describing path
 		printData();
 
 		return map;
@@ -120,7 +119,7 @@ public:
 
 private:
 	
-	// Prints out map of vertices, an x means that vertex is part of the shortest path
+	// Prints out data describing path
 	void printData() const {
 		std::cout << "Dijkstra's path \n";
 		std::cout << "Cells examined: " << num_v_explored << "\n";
@@ -157,10 +156,10 @@ private:
 
 	// Helper function for updateAdj()
 	void updateV(Vertex* v, Vertex* curr_v, int new_path_len) {
-		++num_v_explored;
 		// If curr_v is walkable and new_path_len is less than curr_v's path length, update 
 		// curr_v's path length and prev vertex, and push it into pq
 		if (isWalkable(curr_v)) {
+			++num_v_explored;
 			if (new_path_len < curr_v->path_length) {
 				curr_v->path_length = new_path_len;
 				curr_v->prev_vertex = v->loc;

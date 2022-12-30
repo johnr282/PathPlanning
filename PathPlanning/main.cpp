@@ -5,6 +5,7 @@
 #include "bfs_dfs.h"
 
 
+using Map = std::vector<std::vector<Cell>>;
 
 // ---------- Helper function prototypes ----------
 
@@ -13,17 +14,15 @@
 // <num_rows> <num_cols>
 // <data>
 // 1 is obstacle, 0 is walkable
-static std::vector<std::vector<Cell>> readMap();
+Map readMap();
 
 // Reads in start and goal coordinate from cin; in input file, start coordinate must immediately
 // follow data, and goal coordinate must immediately follow goal coordinate
-static std::pair<Coordinate, Coordinate> readStartGoal();
+std::pair<Coordinate, Coordinate> readStartGoal();
 
 // Check that start and goal coordinates are both walkable
-void checkStartGoal(const std::vector<std::vector<Cell>>& map, const Coordinate& start, const Coordinate& goal);
+void checkStartGoal(const Map& map, const Coordinate& start, const Coordinate& goal);
 
-
-using Map = std::vector<std::vector<Cell>>;
 
 int main() {
 	// Reads map data from cin or input file
@@ -48,12 +47,16 @@ int main() {
 	// and how many cells were examined in the process (a simple measure of efficiency)
 
 	Dijkstra d_path(map, start, goal);
-	Map d_map = d_path.findPath();
-	printMap(d_map);
+	printMap(d_path.findPath());
 	
 	AStar a_path(map, start, goal);
-	Map a_map = a_path.findPath();
-	printMap(a_map);
+	printMap(a_path.findPath());
+
+	BreadthDepthSearch bfs_path(map, start, goal);
+	printMap(bfs_path.findPathBFS());
+
+	BreadthDepthSearch dfs_path(map, start, goal);
+	printMap(dfs_path.findPathDFS());
 
 	return 0;
 } // main()
@@ -67,7 +70,7 @@ int main() {
 // <num_rows> <num_cols>
 // <data>
 // 1 is obstacle, 0 is walkable
-static std::vector<std::vector<Cell>> readMap() {
+Map readMap() {
 	int num_rows, num_cols;
 	std::cin >> num_rows >> num_cols;
 	std::vector<std::vector<Cell>> map(num_rows, std::vector<Cell>(num_cols));
@@ -95,22 +98,16 @@ static std::vector<std::vector<Cell>> readMap() {
 
 // Reads in start and goal coordinate from cin; in input file, start coordinate must immediately
 // follow data, and goal coordinate must immediately follow goal coordinate
-static std::pair<Coordinate, Coordinate> readStartGoal() {
+std::pair<Coordinate, Coordinate> readStartGoal() {
 	int x_s, y_s, x_g, y_g;
 	std::cin >> x_s >> y_s >> x_g >> y_g;
 	return { {x_s, y_s}, {x_g, y_g} };
 }
 
 // Check that start and goal coordinates are both walkable
-void checkStartGoal(const std::vector<std::vector<Cell>>& map, const Coordinate& start, const Coordinate& goal) {
+void checkStartGoal(const Map& map, const Coordinate& start, const Coordinate& goal) {
 	if (map[start.row][start.col] != Cell::walkable || map[goal.row][goal.col] != Cell::walkable) {
 		std::cerr << "Invalid start or goal coordinate\n";
 		exit(1);
 	}
 }
-
-
-
-
-
-

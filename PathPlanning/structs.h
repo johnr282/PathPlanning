@@ -33,7 +33,7 @@ struct Coordinate {
 };
 
 // Prints given 2D vector of cells to cout
-static void printMap(std::vector<std::vector<Cell>>& map) {
+static void printMap(const std::vector<std::vector<Cell>>& map) {
 	for (int i = 0; i < map.size(); ++i) {
 		for (int j = 0; j < map[0].size(); ++j) {
 			switch (map[i][j]) {
@@ -58,3 +58,4 @@ static void printMap(std::vector<std::vector<Cell>>& map) {
 	} // for(i)
 	std::cout << "\n\n";
 } // printMap()
+
