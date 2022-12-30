@@ -112,7 +112,7 @@ public:
 
 		// Backtrack from goal to find the shortest path between start and goal
 		reconstructPath();
-		// Print the map; vertices in the shortest path will be appear as an 'x'
+		// Print the map; vertices in the shortest path will be appear as a red x
 		printData();
 
 		return map;
@@ -132,57 +132,42 @@ private:
 	void updateAdj(Vertex* v) {
 		// Calculate new path length coming from v
 		int new_path_len = v->path_length + 1;
-		// Update vertex above if new_path_len is less than its current path_length
-		// Check if vertex above is walkable and check for indexing out of bounds
+		// Check for out of bounds indexing
 		if (v->loc.row != 0) {
 			Vertex* v_up = &(vertices[v->loc.row - 1][v->loc.col]);
-			++num_v_explored;
-			if (isWalkable(v_up)) {
-				if (new_path_len < v_up->path_length) {
-					v_up->path_length = new_path_len;
-					v_up->prev_vertex = v->loc;
-					pq.push(v_up);
-				}
-			}
+			updateV(v, v_up, new_path_len);
 		}
 		
 		// Repeat above process vertices below, left, and right
 		if (v->loc.row != vertices.size() - 1) {
 			Vertex* v_down = &(vertices[v->loc.row + 1][v->loc.col]);
-			++num_v_explored;
-			if (isWalkable(v_down)) {
-				if (new_path_len < v_down->path_length) {
-					v_down->path_length = new_path_len;
-					v_down->prev_vertex = v->loc;
-					pq.push(v_down);
-				}
-			}
+			updateV(v, v_down, new_path_len);
 		}
 
 		if (v->loc.col != vertices[0].size() - 1) {
 			Vertex* v_right = &(vertices[v->loc.row][v->loc.col + 1]);
-			++num_v_explored;
-			if (isWalkable(v_right)) {
-				if (new_path_len < v_right->path_length) {
-					v_right->path_length = new_path_len;
-					v_right->prev_vertex = v->loc;
-					pq.push(v_right);
-				}
-			}
+			updateV(v, v_right, new_path_len);
 		}
 
 		if (v->loc.col != 0) {
 			Vertex* v_left = &(vertices[v->loc.row][v->loc.col - 1]);
-			++num_v_explored;
-			if (isWalkable(v_left)) {
-				if (new_path_len < v_left->path_length) {
-					v_left->path_length = new_path_len;
-					v_left->prev_vertex = v->loc;
-					pq.push(v_left);
-				}
-			}
+			updateV(v, v_left, new_path_len);
 		}
 	} // updateAdj()
+
+	// Helper function for updateAdj()
+	void updateV(Vertex* v, Vertex* curr_v, int new_path_len) {
+		++num_v_explored;
+		// If curr_v is walkable and new_path_len is less than curr_v's path length, update 
+		// curr_v's path length and prev vertex, and push it into pq
+		if (isWalkable(curr_v)) {
+			if (new_path_len < curr_v->path_length) {
+				curr_v->path_length = new_path_len;
+				curr_v->prev_vertex = v->loc;
+				pq.push(curr_v);
+			}
+		}
+	}
 
 	// Backtrack from goal to find the shortest path between start and goal; sets the type of
 	// each vertex in the path equal to "path"

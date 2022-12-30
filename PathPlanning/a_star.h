@@ -30,7 +30,7 @@ private:
 		// Set to true when vertex is explored and placed in open_list
 		bool in_open = false;
 
-	}; // class Vertex
+	}; // Vertex struct
 
 
 	// Functor to compare two Vertex pointers; returns true if Vertex a's f is less
@@ -44,7 +44,7 @@ private:
 	}; // class FComp
 
 
-	// ---------- Member variables ----------
+// ---------- Member variables ----------
 
 	// Stores all the vertices in the map
 	std::vector<std::vector<Vertex>> vertices;
@@ -72,9 +72,9 @@ private:
 
 public:
 
-	// ---------- Member functions ----------
+// ---------- Member functions ----------
 
-		// Constructor
+	// Constructor
 	AStar(const std::vector<std::vector<Cell>>& map_in, const Coordinate& start_in,
 		const Coordinate& goal_in)
 		: map{ map_in }, start{ start_in }, goal{ goal_in } {
@@ -157,73 +157,48 @@ private:
 		// Check for out of bounds indexing
 		if (v->loc.row != 0) {
 			Vertex* v_up = &(vertices[v->loc.row - 1][v->loc.col]);
-			auto it = closed_list.find(v_up);
-			++num_v_explored;
-			// If v_up is walkable and not in closed_list
-			if (isWalkable(v_up) && it == closed_list.end()) {
-				// If new g_score is shorter than v_up's current g_score or v_up is
-				// not in the open_list
-				if (new_g_score < v_up->g_score || !v_up->in_open) {
-					// Update v_up's g_score, f_score, and prev_vertex
-					v_up->g_score = new_g_score;
-					v_up->f_score = new_g_score + calculateH(v_up);
-					v_up->prev_vertex = v->loc;
-					// Add v_up to open_list; even if v_up was already in open_list, we
-					// need to add it again to take the updated f_score into account
-					open_list.push(v_up);
-					v_up->in_open = true;
-				}
-			}
+			updateV(v, v_up, new_g_score);
 		}
 
-		// Repeat process for below, left, and right vertices
 		// Below vertex
 		if (v->loc.row != vertices.size() - 1) {
 			Vertex* v_down = &(vertices[v->loc.row + 1][v->loc.col]);
-			auto it = closed_list.find(v_down);
-			if (isWalkable(v_down) && it == closed_list.end()) {
-				if (new_g_score < v_down->g_score || !v_down->in_open) {
-					v_down->g_score = new_g_score;
-					v_down->f_score = new_g_score + calculateH(v_down);
-					v_down->prev_vertex = v->loc;
-					open_list.push(v_down);
-					v_down->in_open = true;
-				}
-			}
+			updateV(v, v_down, new_g_score);
 		}
 
 		// Left vertex
 		if (v->loc.col != 0) {
 			Vertex* v_left = &(vertices[v->loc.row][v->loc.col - 1]);
-			auto it = closed_list.find(v_left);
-			++num_v_explored;
-			if (isWalkable(v_left) && it == closed_list.end()) {
-				if (new_g_score < v_left->g_score || !v_left->in_open) {
-					v_left->g_score = new_g_score;
-					v_left->f_score = new_g_score + calculateH(v_left);
-					v_left->prev_vertex = v->loc;
-					open_list.push(v_left);
-					v_left->in_open = true;
-				}
-			}
+			updateV(v, v_left, new_g_score);
 		}
 
 		// Right vertex
 		if (v->loc.col != vertices[0].size() - 1) {
 			Vertex* v_right = &(vertices[v->loc.row][v->loc.col + 1]);
-			auto it = closed_list.find(v_right);
-			++num_v_explored;
-			if (isWalkable(v_right) && it == closed_list.end()) {
-				if (new_g_score < v_right->g_score || !v_right->in_open) {
-					v_right->g_score = new_g_score;
-					v_right->f_score = new_g_score + calculateH(v_right);
-					v_right->prev_vertex = v->loc;
-					open_list.push(v_right);
-					v_right->in_open = true;
-				}
-			}
+			updateV(v, v_right, new_g_score);
 		}
 	} // updateAdj()
+
+	// Helper function for updateAdj()
+	void updateV(Vertex* v, Vertex* curr_v, int new_g_score) {
+		auto it = closed_list.find(curr_v);
+		++num_v_explored;
+		// If v_up is walkable and not in closed_list
+		if (isWalkable(curr_v) && it == closed_list.end()) {
+			// If new g_score is shorter than v_up's current g_score or v_up is
+			// not in the open_list
+			if (new_g_score < curr_v->g_score || !curr_v->in_open) {
+				// Update v_up's g_score, f_score, and prev_vertex
+				curr_v->g_score = new_g_score;
+				curr_v->f_score = new_g_score + calculateH(curr_v);
+				curr_v->prev_vertex = v->loc;
+				// Add v_up to open_list; even if v_up was already in open_list, we
+				// need to add it again to take the updated f_score into account
+				open_list.push(curr_v);
+				curr_v->in_open = true;
+			}
+		}
+	} // updateV()
 
 	// Backtrack from goal to find the shortest path between start and goal; sets the type of
 	// each vertex in the path equal to "path"
