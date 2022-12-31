@@ -3,6 +3,7 @@
 #include "dijkstra.h"
 #include "a_star.h"
 #include "bfs_dfs.h"
+#include "greedy_best_fs.h"
 
 
 using Map = std::vector<std::vector<Cell>>;
@@ -57,6 +58,9 @@ int main() {
 
 	BreadthDepthSearch dfs_path(map, start, goal);
 	printMap(dfs_path.findPathDFS());
+
+	GreedyBestFS gbfs_path(map, start, goal);
+	printMap(gbfs_path.findPath());
 
 	return 0;
 } // main()

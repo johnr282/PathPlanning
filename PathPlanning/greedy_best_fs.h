@@ -1,13 +1,11 @@
 #pragma once
 
-#include <vector>
 #include <queue>
 #include <climits>
-#include <set>
 #include "structs.h"
 
 
-class AStar {
+class GreedyBestFS {
 private:
 
 	struct Vertex {
@@ -18,30 +16,27 @@ private:
 		// Location of vertex in vertices
 		Coordinate loc;
 
-		// Sum of estimated cost to goal and cost from start
-		int f_score = INT_MAX;
-
-		// Cost to get from start to vertex
-		int g_score = INT_MAX;
+		// Estimate of the distance to the goal
+		int h_score = INT_MAX;
 
 		// Stores type of vertex 
 		Cell type;
 
-		// Set to true when vertex is explored and placed in open_list
+		// Set to true when vertex is placed into open list
 		bool in_open = false;
 
 	}; // Vertex struct
 
 
-	// Functor to compare two Vertex pointers; returns true if Vertex a's f is greater
-	// than Vertex b's f
-	class FComp {
+	// Functor to compare two Vertex pointers; returns true if Vertex a's h is greater
+	// than Vertex b's h
+	class HComp {
 	public:
 
 		bool operator()(const Vertex* a, const Vertex* b) {
-			return a->f_score > b->f_score;
+			return a->h_score > b->h_score;
 		}
-	}; // class FComp
+	}; // class HComp
 
 
 // ---------- Member variables ----------
@@ -52,12 +47,8 @@ private:
 	// Used for printing the path
 	std::vector<std::vector<Cell>> map;
 
-	// Min f_score priority queue; vertex with lowest f_score has highest priority; 
-	// contains vertices that still need to be explored
-	std::priority_queue<Vertex*, std::vector<Vertex*>, FComp> open_list;
-
-	// Contains vertices that have been explored already
-	std::set<Vertex*> closed_list;
+	// Min h_score priority queue containing vertices that have been visited
+	std::priority_queue<Vertex*, std::vector<Vertex*>, HComp> open_list;
 
 	// Finds the shortest path between these two vertices
 	Coordinate start;
@@ -70,13 +61,13 @@ private:
 	// Length of path
 	int total_path_length = 0;
 
-public:
+public: 
 
 // ---------- Member functions ----------
 
 	// Constructor
-	AStar(const std::vector<std::vector<Cell>>& map_in, const Coordinate& start_in,
-		const Coordinate& goal_in)
+	GreedyBestFS(const std::vector<std::vector<Cell>>& map_in, const Coordinate& start_in,
+		const Coordinate& goal_in) 
 		: map{ map_in }, start{ start_in }, goal{ goal_in } {
 		// Checks that start and goal are walkable spaces
 		if (map_in[start.row][start.col] != Cell::start || map_in[goal.row][goal.col] != Cell::goal) {
@@ -96,39 +87,27 @@ public:
 				vertices[i][j].type = map_in[i][j];
 			}
 		}
-	} // AStar()
+	} // GreedyBestFS()
 
-	// Uses A* to find the shortest path between start and goal
+
+	// Uses greedy best-first search algorithm to find the shortest path between start and goal
 	std::vector<std::vector<Cell>> findPath() {
-		// Calculate start's f_score and add it to open_list
-		Vertex* v_start = &(vertices[start.row][start.col]);
-		v_start->g_score = 0;
-		v_start->f_score = calculateH(v_start);
-		open_list.push(v_start);
-		v_start->in_open = true;
+		// Insert start vertex into open list
+		Vertex* start_v = &(vertices[start.row][start.col]);
+		open_list.push(start_v);
+		start_v->in_open = true;
 
 		while (!open_list.empty()) {
-			// Get vertex with lowest f_score out of open_list
-			Vertex* v_min = open_list.top();
+			// Get vertex with minimum h_score out of open_list
+			Vertex* curr_v = open_list.top();
 			open_list.pop();
-			v_min->in_open = false;
-			// If v_min is already in the closed_list, meaning v_min is a duplicate of 
-			// a vertex that has already been explored, move on to the next v_min
-			if (closed_list.find(v_min) != closed_list.end()) {
-				continue;
-			}
-			// Put v_min in closed list
-			closed_list.insert(v_min);
-
-			// If v_min is the goal, we have found the shortest path between start and goal
-			if (v_min->loc == goal) {
+			// If curr_v is the goal, break out of the while loop
+			if (curr_v->loc == goal) {
 				break;
 			}
-			// Process min_v's adjacent vertices; calculate their f_scores and add them to 
-			// open_list
-			updateAdj(v_min);
+			// Update adjacent vertices h_scores and push them into open_list
+			updateAdj(curr_v);
 		}
-
 		// Backtrack from goal to start to find the shortest path between start and goal
 		reconstructPath();
 		// Print data describing path
@@ -149,55 +128,62 @@ private:
 
 
 	void updateAdj(Vertex* v) {
-		// New g_score for each adjacent vertex
-		int new_g_score = v->g_score + 1;
-
 		// Above vertex
 		// Check for out of bounds indexing
 		if (v->loc.row != 0) {
 			Vertex* v_up = &(vertices[v->loc.row - 1][v->loc.col]);
-			updateV(v, v_up, new_g_score);
+			// Calculates v_up's h_score and pushes it into open_list
+			updateV(v, v_up);
 		}
 
 		// Below vertex
 		if (v->loc.row != vertices.size() - 1) {
 			Vertex* v_down = &(vertices[v->loc.row + 1][v->loc.col]);
-			updateV(v, v_down, new_g_score);
+			updateV(v, v_down);
 		}
 
 		// Left vertex
 		if (v->loc.col != 0) {
 			Vertex* v_left = &(vertices[v->loc.row][v->loc.col - 1]);
-			updateV(v, v_left, new_g_score);
+			updateV(v, v_left);
 		}
 
 		// Right vertex
 		if (v->loc.col != vertices[0].size() - 1) {
 			Vertex* v_right = &(vertices[v->loc.row][v->loc.col + 1]);
-			updateV(v, v_right, new_g_score);
+			updateV(v, v_right);
 		}
 	} // updateAdj()
 
+
 	// Helper function for updateAdj()
-	void updateV(Vertex* v, Vertex* adj_v, int new_g_score) {
-		auto it = closed_list.find(adj_v);
-		// If v_up is walkable and not in closed_list
-		if (isWalkable(adj_v) && it == closed_list.end()) {
+	void updateV(Vertex* src_v, Vertex* adj_v) {
+		// Check if adj_v is walkable and not in open_list already
+		if (isWalkable(adj_v) && !adj_v->in_open) {
 			++num_v_explored;
-			// If new g_score is shorter than v_up's current g_score or v_up is
-			// not in the open_list
-			if (new_g_score < adj_v->g_score || !adj_v->in_open) {
-				// Update v_up's g_score, f_score, and prev_vertex
-				adj_v->g_score = new_g_score;
-				adj_v->f_score = new_g_score + calculateH(adj_v);
-				adj_v->prev_vertex = v->loc;
-				// Add v_up to open_list; even if v_up was already in open_list, we
-				// need to add it again to take the updated f_score into account
-				open_list.push(adj_v);
-				adj_v->in_open = true;
-			}
+			// Calculate adj_v's h_score, push it into open_list, and set its prev_vertex
+			// to src_v
+			adj_v->h_score = calculateH(adj_v);
+			open_list.push(adj_v);
+			adj_v->in_open = true;
+			adj_v->prev_vertex = src_v->loc;
 		}
-	} // updateV()
+	}
+
+
+	// Returns true if a given vertex is either walkable, start, or goal
+	bool isWalkable(Vertex* v) {
+		return v->type == Cell::walkable || v->type == Cell::start || v->type == Cell::goal;
+	}
+
+
+	// Prints out data describing path
+	void printData() const {
+		std::cout << "Greedy best-first search path\n";
+		std::cout << "Cells examined: " << num_v_explored << "\n";
+		std::cout << "Path length: " << total_path_length << "\n\n";
+	} // printData()
+
 
 	// Backtrack from goal to find the shortest path between start and goal; sets the type of
 	// each vertex in the path equal to "path"
@@ -216,18 +202,7 @@ private:
 			++total_path_length;
 		}
 	} // reconstructPath()
-
-	// Prints out data describing path
-	void printData() const {
-		std::cout << "A* path \n";
-		std::cout << "Cells examined: " << num_v_explored << "\n";
-		std::cout << "Path length: " << total_path_length << "\n\n";
-	} // printData()
-
-	// Returns true if a given vertex is either walkable, start, or goal
-	bool isWalkable(Vertex* v) {
-		return v->type == Cell::walkable || v->type == Cell::start || v->type == Cell::goal;
-	}
+	 
 
 
-}; // class AStar
+}; // GreedyBestFS class

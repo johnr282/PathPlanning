@@ -142,6 +142,7 @@
   <ItemGroup>
     <ClInclude Include="a_star.h" />
     <ClInclude Include="bfs_dfs.h" />
+    <ClInclude Include="greedy_best_fs.h" />
     <ClInclude Include="structs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

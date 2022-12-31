@@ -215,14 +215,14 @@ private:
 
 	// Prints out data describing BFS path
 	void printBFSData() const {
-		std::cout << "BFS path \n";
+		std::cout << "Breadth-first search path \n";
 		std::cout << "Cells examined: " << num_v_explored << "\n";
 		std::cout << "Path length: " << total_path_length << "\n\n";
 	} // printBFSData()
 
 	// Prints out data describing DFS path
 	void printDFSData() const {
-		std::cout << "DFS path \n";
+		std::cout << "Depth-first search path \n";
 		std::cout << "Cells examined: " << num_v_explored << "\n";
 		std::cout << "Path length: " << total_path_length << "\n\n";
 	} // printDFSData()
@@ -232,4 +232,4 @@ private:
 		return v->type == Cell::walkable || v->type == Cell::start || v->type == Cell::goal;
 	} // isWalkable()
 
-};
+}; // BreadthDepthSearch class

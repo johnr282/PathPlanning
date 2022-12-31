@@ -55,5 +55,8 @@
     <ClInclude Include="bfs_dfs.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="greedy_best_fs.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
