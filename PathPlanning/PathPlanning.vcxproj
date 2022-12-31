@@ -138,6 +138,7 @@
     <Text Include="test5.txt" />
     <Text Include="test6.txt" />
     <Text Include="test7.txt" />
+    <Text Include="test8.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="a_star.h" />
