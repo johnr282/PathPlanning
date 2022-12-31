@@ -208,6 +208,7 @@ private:
 		while (!(v_path == start)) {
 			if (v_path == Coordinate{ -1, -1 }) {
 				std::cout << "No path found\n";
+				total_path_length = 0;
 				break;
 			}
 			map[v_path.row][v_path.col] = Cell::path;

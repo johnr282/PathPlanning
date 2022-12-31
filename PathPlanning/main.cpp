@@ -47,20 +47,20 @@ int main() {
 	// Runs path planning algorithms and prints the paths they find, the length of the path, 
 	// and how many cells were examined in the process (a simple measure of efficiency)
 
-	Dijkstra d_path(map, start, goal);
-	printMap(d_path.findPath());
-	
-	AStar a_path(map, start, goal);
-	printMap(a_path.findPath());
-
 	BreadthDepthSearch bfs_path(map, start, goal);
 	printMap(bfs_path.findPathBFS());
 
 	BreadthDepthSearch dfs_path(map, start, goal);
 	printMap(dfs_path.findPathDFS());
 
+	Dijkstra d_path(map, start, goal);
+	printMap(d_path.findPath());
+
 	GreedyBestFS gbfs_path(map, start, goal);
 	printMap(gbfs_path.findPath());
+	
+	AStar a_path(map, start, goal);
+	printMap(a_path.findPath());
 
 	return 0;
 } // main()
