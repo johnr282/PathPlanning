@@ -17,10 +17,18 @@ In the above input file, there are 5 rows, 5 columns, the start location is at r
 
 The algorithms I implemented are breadth-first search, depth-first search, greedy best-first search, Dijkstra's algorithm, and A* search. For each algorithm, I output the path it finds between the start and goal coordinates (or "no path found"), the length of that path, and how many grid cells the algorithm examined. I define examining a grid cell as inserting a cell into a search container, such as a priority queue or a stack. This is a measure of how much of the occupacancy grid the algorithm had to look at while calculating the path, a rudimentary metric of the algorithm's efficiency. 
 
-Example outputs:
+Example output:
 
 ![test8_output_1](https://user-images.githubusercontent.com/112778919/210175983-cc2bbe09-4fc5-4f5a-9436-600c74ba6a88.png)
 
 ![test8_output_2](https://user-images.githubusercontent.com/112778919/210176053-d0ef41c1-0875-466c-bdb3-4436062b2019.png)
 
 ![test8_output_3](https://user-images.githubusercontent.com/112778919/210176057-8dd1e148-522e-4920-acac-fe8405bf9ac9.png)
+
+Another example output:
+
+![test7_output_1](https://user-images.githubusercontent.com/112778919/210184891-7b34f900-dfd5-4262-9084-949a11c62138.png)
+
+![test7_output_2](https://user-images.githubusercontent.com/112778919/210184894-5e56c5ad-cffe-4228-9b81-93548874ff0d.png)
+
+![test7_output_3](https://user-images.githubusercontent.com/112778919/210184896-82b80e82-edde-47b0-9119-7164bc24ab99.png)
