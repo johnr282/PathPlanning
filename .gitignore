@@ -98,6 +98,12 @@ StyleCopReport.xml
 *.svclog
 *.scc
 
+# Exclude test files (.txt files)
+*.txt
+
+# Exclude screenshots of output
+*.png
+
 # Chutzpah Test files
 _Chutzpah*
 

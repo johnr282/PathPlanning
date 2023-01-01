@@ -131,6 +131,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="outfile.txt" />
     <Text Include="test1.txt" />
     <Text Include="test2.txt" />
     <Text Include="test3.txt" />
@@ -145,6 +146,9 @@
     <ClInclude Include="bfs_dfs.h" />
     <ClInclude Include="greedy_best_fs.h" />
     <ClInclude Include="structs.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\.gitignore" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

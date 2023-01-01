@@ -50,6 +50,9 @@
     <Text Include="test7.txt">
       <Filter>Resource Files\Tests</Filter>
     </Text>
+    <Text Include="outfile.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="structs.h">
@@ -64,5 +67,10 @@
     <ClInclude Include="greedy_best_fs.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\.gitignore">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
